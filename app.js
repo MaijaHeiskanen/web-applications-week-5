@@ -14,8 +14,8 @@ var app = express();
 // Set up mongoose connection
 var mongoose = require('mongoose');
 // For local dev
-// var dev_db_url = 'mongodb://localhost:27017'
-var dev_db_url = 'mongodb://mongo:27017'
+var dev_db_url = 'mongodb://localhost:27017'
+// var dev_db_url = 'mongodb://mongo:27017'
 var mongoDB = process.env.MONGODB_URI || dev_db_url;
 mongoose.connect(mongoDB);
 mongoose.Promise = Promise;

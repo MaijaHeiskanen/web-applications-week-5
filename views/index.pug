@@ -1,5 +1,13 @@
-extends layout
+doctype html
+html
 
-block content
-  h1= title
-  p Welcome to #{title}
+  head
+    title Parcel Sandbox
+    meta(charset="UTF-8")
+    script(src="scripts/index.js")
+    link(rel="stylesheet", href="stylesheets/style.css")
+
+  body
+    h1 Tic Tac Toe
+    p#turn Turn: X
+    div#board
