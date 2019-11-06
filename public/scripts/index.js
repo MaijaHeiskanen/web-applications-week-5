@@ -2,6 +2,68 @@ var currentPlayer = "X";
 
 var taulukko = [];
 
+function loadPanels() {
+  fetch(`/panels/player`).then(function(res) {
+    res.json().then(function(panel) {
+      if (panel === null) {
+        currentPlayer = "X";
+      } else {
+        currentPlayer = panel.value;
+      }
+
+      var turn = document.getElementById("turn");
+      turn.innerHTML = "Turn: " + currentPlayer;
+    });
+  });
+
+  for (let x = 0; x < taulukko[0].length; x++) {
+    for (let y = 0; y < taulukko.length; y++) {
+      const id = `tr${y}td${x}`;
+
+      fetch(`/panels/${id}`).then(function(res) {
+        res.json().then(function(panel) {
+          if (panel === null) {
+            return;
+          }
+
+          const ruutu = document.getElementById(`tr${x}td${y}`);
+          ruutu.innerText = panel.value;
+          taulukko[x][y] = panel.value;
+        });
+      });
+    }
+  }
+}
+
+function saveNewClick(value, x, y) {
+  const id = `tr${y}td${x}`;
+  fetch(`/panels/${id}/save`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      value: value
+    })
+  });
+
+  fetch(`/panels/player/save`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      value: currentPlayer
+    })
+  });
+}
+
+function clearDatabase() {
+  return fetch("/panels/clear", {
+    method: "POST"
+  });
+}
+
 // Copyed from courses demo.
 if (document.readyState !== "loading") {
   console.log("Document ready, executing");
@@ -90,7 +152,7 @@ function clicked(x, y) {
       currentPlayer = "X";
       turn.innerHTML = "Turn: X";
     }
-
+    saveNewClick(taulukko[x][y], x, y);
     //console.log(taulukko[x][y]);
     ruutu.innerHTML = taulukko[x][y];
   } else {
@@ -103,6 +165,9 @@ function clicked(x, y) {
     turn.innerHTML = `${winner} won!`;
     alert(`${winner} won!`);
     clearTable();
+    clearDatabase().then(function() {
+      window.location = window.location;
+    });
   }
 }
 
@@ -117,9 +182,20 @@ function clearTable() {
 function initializeCode() {
   console.log("Intiializing");
   clearTable();
+  const resetButton = document.getElementById("resetButton");
+  resetButton.onclick = function() {
+    clearDatabase();
+    window.location = window.location;
+  };
+
   var board = document.getElementById("board");
 
   var table = document.createElement("table");
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // Get saved moves from the database ond put in the table
+  // at the beginning e.g. here.
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   for (let step = 0; step < taulukko[0].length; step++) {
     var para = document.createElement("tr");
@@ -140,4 +216,6 @@ function initializeCode() {
   }
 
   board.appendChild(table);
+
+  loadPanels();
 }
